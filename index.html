@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a0a1f">
+  <meta name="format-detection" content="telephone=no">
+  <title>诸神愚戏 · 信仰试炼</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="title-screen" class="screen active">
+    <div class="title-bg"></div>
+    <div class="title-content">
+      <div class="eye-icon">👁</div>
+      <h1 class="game-title">诸神愚戏</h1>
+      <p class="game-subtitle">· 信仰试炼 ·</p>
+      <p class="game-quote">"我做人有两个原则：从不骗人，从不相信任何人说的话"</p>
+      <p class="game-author">—— 程实</p>
+      <button class="btn-primary" onclick="Game.startGame()">开启信仰试炼</button>
+      <button class="btn-secondary" onclick="Game.loadGame()">继续上次游戏</button>
+      <button class="btn-tertiary" onclick="Game.showHelp()">游戏说明</button>
+      <div class="title-links">
+        <button class="link-btn" onclick="Game.showLeaderboard()">🏆 欺诈与记忆的天梯</button>
+        <button class="link-btn" onclick="Game.showForum()">💬 信仰世界大厅</button>
+      </div>
+      <p class="version-tag">v0.2 · 基于《诸神愚戏》前248章设定</p>
+    </div>
+  </div>
+  <div id="main-screen" class="screen">
+    <header class="game-header">
+      <div class="header-left"><span class="header-title">信仰试炼</span></div>
+      <div class="header-right">
+        <span class="score-badge">登神: <b id="score-dengshen">0</b></span>
+        <span class="score-badge">觐神: <b id="score-jinshen">0</b></span>
+        <button class="icon-btn" onclick="Game.showMenu()">☰</button>
+      </div>
+    </header>
+    <main class="game-main">
+      <section class="panel panel-chengshi">
+        <div class="panel-header"><span class="char-name">程实</span><span class="char-faith" id="cs-faith">【欺诈】信徒</span></div>
+        <div class="stats-row">
+          <div class="stat-bar"><div class="stat-label">血量</div><div class="stat-bar-bg"><div class="stat-bar-fill hp" id="cs-hp-fill"></div></div><div class="stat-num"><span id="cs-hp">100</span>/100</div></div>
+          <div class="stat-bar"><div class="stat-label">精神</div><div class="stat-bar-bg"><div class="stat-bar-fill mp" id="cs-mp-fill"></div></div><div class="stat-num"><span id="cs-mp">100</span>/100</div></div>
+          <div class="stat-bar"><div class="stat-label">可信</div><div class="stat-bar-bg"><div class="stat-bar-fill trust" id="cs-trust-fill"></div></div><div class="stat-num"><span id="cs-trust">50</span>/100</div></div>
+          <div class="stat-bar jinshen-only hidden" id="cs-fear-wrap"><div class="stat-label">恐惧</div><div class="stat-bar-bg"><div class="stat-bar-fill fear" id="cs-fear-fill"></div></div><div class="stat-num"><span id="cs-fear">0</span>/100</div></div>
+        </div>
+        <div class="talent-row" id="cs-talents"></div>
+        <div class="item-row" id="cs-items"></div>
+      </section>
+      <section class="panel panel-teammates" id="teammates-panel">
+        <div class="panel-header"><span>队友</span><button class="btn-link" onclick="Game.showTeammateDetail()">查看详情</button></div>
+        <div class="teammates-list" id="teammates-list"></div>
+      </section>
+      <section class="panel panel-story">
+        <div class="panel-header"><span class="scene-title" id="scene-title">序章</span><span class="scene-phase" id="scene-phase"></span></div>
+        <div class="story-content" id="story-content"></div>
+      </section>
+      <section class="panel panel-choices" id="choices-panel">
+        <div class="choices-list" id="choices-list"></div>
+      </section>
+      <section class="panel panel-lie hidden" id="lie-panel">
+        <div class="panel-header"><span>🎭 谎言编织</span><button class="btn-link" onclick="Game.closeLiePanel()">收起</button></div>
+        <p class="lie-hint" id="lie-hint">选择编织一个谎言...</p>
+        <div class="lie-options" id="lie-options"></div>
+      </section>
+    </main>
+    <footer class="game-footer">
+      <button class="footer-btn" onclick="Game.useTalent()" id="talent-btn">✨ 天赋</button>
+      <button class="footer-btn" onclick="Game.openLiePanel()" id="open-lie-btn">🎭 谎言</button>
+      <button class="footer-btn" onclick="Game.inventory()" id="inv-btn">🎒 道具</button>
+      <button class="footer-btn" onclick="Game.showAchievements()">🏆 成就</button>
+      <button class="footer-btn" onclick="Game.showHelp()">📖 说明</button>
+    </footer>
+  </div>
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="Game.closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header"><h3 id="modal-title"></h3><button class="modal-close" onclick="Game.closeModal()">✕</button></div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+  <div id="toast-container" class="toast-container"></div>
+  <div id="typing-indicator" class="typing-indicator hidden"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
