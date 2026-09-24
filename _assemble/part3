@@ -292,7 +292,7 @@
           '【腐朽】的权柄。一座小镇被整个拖入了腐朽试炼。'
         ],
         choices: [
-          { text: '尝试治疗村民，遇制腐朽蔓延', next: 'decay_1_2a', effects: { mpCost: 25 } },
+          { text: '尝试治疗村民，遏制腐朽蔓延', next: 'decay_1_2a', effects: { mpCost: 25 } },
           { text: '调查镇上的神庙', next: 'decay_1_2b' },
           { text: '去小镇边缘看衰败的边界', next: 'decay_1_2c' }
         ]
@@ -392,3 +392,39 @@
           { text: '【队友·策略讨论】集体推演：谁有能力操纵时间？', tag: 'strategy', next: 'tl_1_3c', effects: { trust: 5, mpCost: 5 } }
         ]
       },
+      {
+        id: 'tl_1_2b', title: '独自观察',
+        text: [
+          '你装作一切正常，像每一次循环的第一天一样。',
+          '但这一次你注意到了一个细节——灰外套男人第三次走过街角时，脚步和前两次有微妙的不同。',
+          '你跟踪他到了巷子里，他突然转身："你应该已经死了上千次了。你还没发现这个循环的规律吗？"',
+          '他笑了笑。"打破循环的方法，就是——有人自愿永远留在这一天。"'
+        ],
+        choices: [
+          { text: '问他是谁，为什么知道这一切', next: 'tl_1_3d', effects: { csTrust: 3 } },
+          { text: '立刻动手制服他，打破循环', next: 'tl_1_3e', effects: { hpCost: 20 } },
+          { text: '说谎："我已经找到替代者了。不是我留下来。"', tag: 'lie', next: 'tl_1_3f', effects: { trust: -10, csTrust: -8, mpCost: 20 } }
+        ]
+      },
+      {
+        id: 'tl_1_2c', title: '灰外套的秘密',
+        text: [
+          `你来到了街角。灰外套男人已经在等你。`,
+          `"终于舍得来了？"他推了推眼镜，"每次循环，你都是选『和队友商量』然后一起死。这次单刀赴会，有意思。"`,
+          `他告诉你：时间神已经厌倦了这场游戏。只要有一个人自愿成为"锚点"留在这一天，其他人就能出去。`,
+          `"你可以让你的某个队友来当锚点。或者……你自己选。"`
+        ],
+        choices: [
+          { text: '【队友·欺骗】撒谎说"陆沉自愿留下"，骗陆沉当锚点', tag: 'lie', next: 'tl_1_2d', effects: { trust: -25, doubt: 30, csTrust: -20 } },
+          { text: '让灰外套把条件告诉队友，民主投票', next: 'tl_1_3a', effects: { trust: 5 } },
+          { text: '你自己自愿当锚点', next: 'tl_1_3g', effects: { hpCost: 50, csTrust: 10 } }
+        ]
+      },
+      { id: 'tl_1_2d', outcome: 'bad', reward: { dengshen: 5, jinshen: 0 }, summary: '你骗了队友。但灰外套并不打算帮你——他只是想看你怎么自食其果。' },
+      { id: 'tl_1_3a', outcome: 'good', reward: { dengshen: 18, jinshen: 2 }, summary: '队友们投票决定让一个最接近时间神信仰的人留下。民主的代价是痛苦的。' },
+      { id: 'tl_1_3b', outcome: 'mid', reward: { dengshen: 12, jinshen: 1 }, summary: '沉默的队友确实藏着秘密——他就是时间神的信徒。逼得太紧，他反水了。' },
+      { id: 'tl_1_3c', outcome: 'best', reward: { dengshen: 28, jinshen: 4 }, summary: '你们推演出了时间神的真正意图——祂在选继承者。你让陆沉伪装成时间信徒，把"锚点"推给了时间神自己。绝妙的欺诈。' },
+      { id: 'tl_1_3d', outcome: 'good', reward: { dengshen: 15, jinshen: 2 }, summary: '灰外套告诉你他是上一场试炼的幸存者。他已经在这一天循环了三千年。' },
+      { id: 'tl_1_3e', outcome: 'bad', reward: { dengshen: 2, jinshen: 0 }, summary: '你制服了他。但他消失了——留下一句话：循环不会因为你杀了一个使者就停止。' },
+      { id: 'tl_1_3f', outcome: 'mid', reward: { dengshen: 10, jinshen: 1 }, summary: '灰外套相信了你的谎言。但你把队友推进了火坑，信任彻底破产。' },
+      { id: 'tl_1_3g', outcome: 'best', reward: { dengshen: 30, jinshen: 5 }, summary: '你自愿成为锚点。时间神愣了一下——祂见过无数试图逃脱的信徒，但从未见过主动留下的。祂给了你最大的尊重。' }
