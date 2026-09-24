@@ -1,0 +1,422 @@
+          `钥匙、老管家、公爵弟弟——三条线索交织在一起。`,
+          `但你感觉有人的目光正在注视你。有人发现你在偷听了？`
+        ],
+        choices: [
+          { text: '立刻假装什么都没发生，然后指证公爵弟弟', next: 'order_1_3g', effects: { trust: 5, csTrust: 5 } },
+          { text: '【队友·支援】让队友掩护你去地牢搜查', tag: 'support', next: 'order_1_3g', effects: { trust: 8, hpCost: 5, mpCost: 10 } },
+          { text: '继续保持专注——也许还能听到更关键的', next: 'order_1_3g_secret', effects: { mpCost: 20, csTrust: 10, trust: 0 } }
+        ]
+      },
+      // 结果场景
+      { id: 'order_1_3a', outcome: 'good', title: '真相大白', reward: { dengshen: 15, jinshen: 3 }, summary: '你识破了少女的谎言，她崩溃后承认是受真正凶手指使。真相虽曲折，但秩序得以伸张。你获得了秩序的认可。' },
+      { id: 'order_1_3a_alt', outcome: 'mid', title: '逼供的代价', reward: { dengshen: 12, jinshen: 2 }, summary: '你用假消息（说已抓到公爵弟弟）逼少女崩溃——她确实招供了，但秩序神看到了你不择手段的一面。及格，但不赞赏。' },
+      { id: 'order_1_3b', outcome: 'mid', title: '勉强脱困', reward: { dengshen: 10, jinshen: 2 }, summary: '骑士提供了一些证据帮你解围，但真凶并未完全暴露。秩序神只给了你及格分。' },
+      { id: 'order_1_3c', outcome: 'bad', title: '弄巧成拙', reward: { dengshen: 3, jinshen: 0 }, summary: '你假装中毒的表演太过拙劣，反而让所有人认为你在演戏。秩序神对你的诚信打了负分。' },
+      { id: 'order_1_3c_alt', outcome: 'mid', title: '及时认错', reward: { dengshen: 8, jinshen: 1 }, summary: '你立刻道歉认错，虽然弄巧成拙，但诚实的态度挽回了一些分。秩序神叹气给了及格。' },
+      { id: 'order_1_3d', outcome: 'bad', title: '谎言崩塌', reward: { dengshen: -5, jinshen: 0 }, summary: '你越编漏洞越多，最终被当场戳穿。秩序神怒斥你的虚伪，直接给了负分。' },
+      { id: 'order_1_3d_alt', outcome: 'mid', title: '队友圆谎', reward: { dengshen: 6, jinshen: 1 }, summary: '队友帮你圆谎虽然暂时保住了局面，但秩序神看穿了一切。不过……他对队友们的团结还是给了一点面子。' },
+      { id: 'order_1_3e', outcome: 'mid', title: '诚实的代价', reward: { dengshen: 8, jinshen: 1 }, summary: '承认错误后，秩序神看到了你的坦诚，但也看到了你最初的不诚实。勉强给了及格。' },
+      { id: 'order_1_3e_alt', outcome: 'good', title: '武力压制', reward: { dengshen: 14, jinshen: 2 }, summary: '你和队友联手制服黑袍人，从他身上搜出了指向真正凶手的密信。武力不是最好的方式，但在危急时刻有效。' },
+      { id: 'order_1_3f', outcome: 'good', title: '看穿一切', reward: { dengshen: 18, jinshen: 3 }, summary: '你用欺骗大师看穿黑袍人的真实意图——他是秩序神的试炼者，专门测试你的诚实与智慧。你过关了！' },
+      { id: 'order_1_3f_alt', outcome: 'mid', title: '棋差一招', reward: { dengshen: 11, jinshen: 1 }, summary: '你装作没看出来，黑袍人觉得无趣，说出了一部分真相。但因为没有主动点破，秩序神觉得你不够坦诚。' },
+      { id: 'order_1_3g', outcome: 'best', title: '还原完整真相', reward: { dengshen: 20, jinshen: 3 }, summary: '你将所有线索串联，不仅洗清了自己，还揪出了幕后黑手——公爵的弟弟。秩序神对你的推理赞赏有加。' },
+      { id: 'order_1_3g_secret', outcome: 'best', title: '密会秘闻', reward: { dengshen: 25, jinshen: 4 }, summary: `你坚持偷听，最终听到了一条连秩序神都不知道的秘闻——公爵的"死亡"其实是他自己安排的假死，他想通过假死来测试身边所有人的忠诚。而你，是唯一一个被他选出来的"局外人"测试者。` }
+    ]
+  },
+
+  /* === 生命命途 · 诞育 === */
+  'genesis_1': {
+    id: 'genesis_1',
+    name: '求子观音',
+    god: 'genesis',
+    path: '生命',
+    difficulty: 'B',
+    summary: '你被困在一个由【诞育】权柄扭曲的村庄。所有女性都会莫名怀孕，而胎儿却在腹中疯狂生长。作为有治疗能力的牧师，你被村民视为希望——但你隐约感觉到，这并非恩赐。',
+    objective: '找出村庄异常怀孕的真相，并阻止灾难',
+    scenes: [
+      {
+        title: '第一章 · 丰收村',
+        text: [
+          '空气中弥漫着甜腻的气息，像是熟透的果实混合着某种……更原始的气味。',
+          '丰收村，正如它的名字，这里硕果累累。但你看到的却是另一番景象：所有的女性都挺着肚子行走，连少女也不例外。',
+          '"救救我们……"一位脸色惨白的妇人拉住你，"孩子在肚子里……他在咬我……"',
+          '话音未落，她的腹部剧烈鼓起，一只小小的手从衣料下伸了出来！',
+          '你必须尽快搞清楚这里发生了什么。'
+        ],
+        choices: [
+          {
+            text: '尝试用治疗手段稳住这位妇人',
+            tag: 'talent',
+            next: 'genesis_1_2a',
+            effects: { mpCost: 20, hpCost: -15, trust: 10 }
+          },
+          {
+            text: '集中精神，感知妇人体内的动静',
+            tag: 'talent',
+            next: 'genesis_1_2b',
+            effects: { mpCost: 8 }
+          },
+          {
+            text: '询问村里的老人，了解异变的来源',
+            next: 'genesis_1_2c',
+            effects: { trust: 3 }
+          }
+        ]
+      },
+      {
+        id: 'genesis_1_2a',
+        allowLieTrigger: true,
+        title: '治愈与诅咒',
+        text: [
+          '你尝试治疗——微弱的力量灌入妇人身体。但那个胎儿的动静让你不安。',
+          '效果立竿见影——但不是你期待的效果。治疗之力似乎被腹中的胎儿"吸收"了！',
+          '胎儿以肉眼可见的速度飞速生长，妇人发出凄厉的惨叫。',
+          '"不不不……你……你让他更强了！"',
+          '你这才意识到：这里的"病"，根本不是你能治愈的东西。【诞育】的权柄，正在被扭曲地使用着。'
+        ],
+        choices: [
+          {
+            text: '强行用治疗之力压制胎儿生长（可能伤及妇人）',
+            next: 'genesis_1_2a_mid_a',
+            effects: { mpCost: 30, hpCost: 10, trust: -5, doubt: 10 }
+          },
+          {
+            text: '停止治疗，转而去寻找异变的源头',
+            next: 'genesis_1_2a_mid_b',
+            effects: { trust: -8, doubt: 5 }
+          },
+          {
+            text: '编造一个"神秘仪式"，让村民集体祈祷改变胎儿',
+            tag: 'lie',
+            next: 'genesis_1_2a_mid_c',
+            effects: { mpCost: 15, trust: 15, csTrust: -10, doubt: 3 }
+          },
+          {
+            text: '【队友·协作】让新队友用各自天赋分散胎儿的注意力',
+            tag: 'collab',
+            next: 'genesis_1_2a_mid_a',
+            effects: { trust: 8, mpCost: 10, hpCost: 5 }
+          }
+        ]
+      },
+      {
+        id: 'genesis_1_2a_mid_a',
+        title: '生死一线',
+        text: [
+          `你深吸一口气，将治疗之力转化为压制之力——`,
+          `这是一种亵渎。用诞育的力量去扼杀诞育本身。`,
+          `妇人的腹部在你手下剧烈起伏。胎儿发出了类似婴儿的啼哭——但那声音里，有某种让人毛骨悚然的……成熟。`,
+          `"快……快……"妇人抓着你的手，指甲嵌入你的皮肤，"不要……杀……他……"`,
+          `她在保护那个怪物。她不知道那不是她的孩子。`
+        ],
+        choices: [
+          { text: '加大压制力度——牺牲一小部分胎儿救妇人', next: 'genesis_1_3a', effects: { mpCost: 20, trust: 8 } },
+          { text: '停手——尊重她作为母亲的选择', next: 'genesis_1_3a_alt', effects: { trust: 5, csTrust: 5 } },
+          { text: '【队友·支援】让队友固定妇人，你全力压制', tag: 'support', next: 'genesis_1_3a', effects: { hpCost: 5, trust: 5 } }
+        ]
+      },
+      {
+        id: 'genesis_1_2a_mid_b',
+        title: '离开',
+        text: [
+          `你松开手，站起身。妇人用怨恨的眼神看着你——在她看来，是你让孩子变"强壮"的，然后你又放弃了她。`,
+          `你转身走进村庄。身后传来妇人的惨叫。`,
+          `新队友追上来："我们真的不管了？"`,
+          `"我们管不了。"你说，"得找到源头。不然救一个还有下一个。"`
+        ],
+        choices: [
+          { text: '去村庄边缘找那个"赐子果"的来源', next: 'genesis_1_3b', effects: { csTrust: 3 } },
+          { text: '【队友·策略讨论】分析为什么会发生这种事——谁在扭曲诞育权柄？', tag: 'strategy', next: 'genesis_1_3b', effects: { trust: 5, csTrust: 5 } }
+        ]
+      },
+      {
+        id: 'genesis_1_2a_mid_c',
+        title: '集体仪式',
+        text: [
+          `你跑向村庄中心广场，高呼："大家听我说！我知道这是谁的诅咒！我们需要集体祈祷！"`,
+          `你编造了一个"古老的净化仪式"，让所有人手牵手围成圈。`,
+          `诡异的是——村民们真的开始祈祷。他们脸上带着狂热的光芒。`,
+          `而你在中间，作为这个"仪式"的主持者，感受到了一股不属于你的力量……`,
+          `那是信念的力量。虽然你在撒谎，但村民的信仰是真实的。`
+        ],
+        choices: [
+          { text: '继续维持仪式，让信念凝聚到最强', next: 'genesis_1_3c', effects: { mpCost: 25, trust: 15, csTrust: -5 } },
+          { text: '偷偷溜走——这种力量你控制不了', next: 'genesis_1_3c_alt', effects: { trust: -15, csTrust: -10 } }
+        ]
+      },
+      {
+        id: 'genesis_1_2b',
+        title: '腹中真相',
+        text: [
+          '你屏息凝神，将注意力深入妇人体内。',
+          '你听见了——不是一个胎儿，而是……很多个。无数小小的声音在血肉中嗡鸣：',
+          '"妈妈……妈妈……让我出来……我饿……"',
+          '更让你不寒而栗的是——这些声音中有男有女，有老有少……',
+          '这根本不是"怀孕"。这是【诞育】权柄在吞噬村民的生命力，让他们成为新生命的孵化器——而那些"新生命"，是某种被制造出来的怪物。'
+        ],
+        choices: [
+          {
+            text: '将真相告诉村民，让他们自己决定',
+            next: 'genesis_1_2b_mid_a',
+            effects: { trust: 5, doubt: 15, csTrust: 5 }
+          },
+          {
+            text: '对村民隐瞒真相，自己去寻找源头解决',
+            next: 'genesis_1_2b_mid_b',
+            effects: { trust: -10, doubt: 5, csTrust: -5 }
+          },
+          {
+            text: '【队友·欺骗】说谎说"我已经治好一个了"，先稳住村民',
+            tag: 'lie',
+            next: 'genesis_1_2b_mid_a',
+            effects: { trust: -8, doubt: 12, csTrust: -5, mpCost: 5 }
+          }
+        ]
+      },
+      {
+        id: 'genesis_1_2b_mid_a',
+        title: '恐慌',
+        text: [
+          `你当着所有村民的面说出了真相：这不是怀孕，这是孵化怪物。`,
+          `广场上死一般的安静。然后——尖叫、哭喊、混乱。`,
+          `一个抱着肚子的老妇人突然冲向你："你是恶魔！你要杀我们的孩子！"`,
+          `更糟的是——那个"外来商人"不知从哪冒了出来，站在人群后面冷笑。他没有逃。他在看戏。`
+        ],
+        choices: [
+          { text: '当场指证商人，让他暴露', next: 'genesis_1_3d', effects: { trust: 3, csTrust: 5 } },
+          { text: '【队友·支援】让队友保护村民，你去追商人', tag: 'support', next: 'genesis_1_3d', effects: { trust: 8, mpCost: 10 } }
+        ]
+      },
+      {
+        id: 'genesis_1_2b_mid_b',
+        title: '独自前行',
+        text: [
+          `你决定不告诉村民——他们太脆弱了。`,
+          `你和新队友悄悄离开了村庄，顺着商人可能走的路线追踪。`,
+          `路上，你在一片树林里发现了一个令人不安的东西：一株巨大的发光树，树根下埋着数不清的"赐子果"残渣。`,
+          `这就是源头。被腐化的生命之树。`
+        ],
+        choices: [
+          { text: '用诞育之力净化它（你自己会暂时失去牧师能力）', next: 'genesis_1_3e_alt', effects: { mpCost: 30, csTrust: 10 } },
+          { text: '直接砍倒它（简单粗暴但可能释放腐化能量）', next: 'genesis_1_3b', effects: { hpCost: 15, mpCost: 5 } }
+        ]
+      },
+      {
+        id: 'genesis_1_2c',
+        title: '古老仪式',
+        text: [
+          '一位颤巍巍的老婆婆告诉你："七天前，外来的商人给我们送来了「赐子果」……说能让我们家家有后。"',
+          '"我们吃了。然后……然后所有人都怀上了。连男人……"她掀开自己的衣服，胸前微微隆起。',
+          '外来商人，赐子果。你已经有了怀疑：这是某种试炼，有人在刻意用【诞育】权柄制造灾难。',
+          '但为什么？'
+        ],
+        choices: [
+          {
+            text: '去村庄边缘寻找那位"外来商人"的踪迹',
+            next: 'genesis_1_3b',
+            effects: { trust: 0 }
+          },
+          {
+            text: '调查"赐子果"的来源和成分',
+            next: 'genesis_1_3d',
+            effects: { trust: 3 }
+          }
+        ]
+      },
+      // 结果
+      { id: 'genesis_1_3a', outcome: 'mid', reward: { dengshen: 8, jinshen: 1 }, summary: '你杀死了胎儿，但妇人也因失血过多濒死。诞育神认为你浪费了生命的馈赠。' },
+      { id: 'genesis_1_3a_alt', outcome: 'good', reward: { dengshen: 14, jinshen: 2 }, summary: '你选择尊重妇人的选择。诞育神被你的同理心打动——那些怪物竟然没有再长大，反而慢慢萎缩消散了。' },
+      { id: 'genesis_1_3b', outcome: 'good', reward: { dengshen: 15, jinshen: 2 }, summary: '你找到并摧毁了赐子果的源头——一株被腐化的生命之树。但一些村民已经无法挽回。' },
+      { id: 'genesis_1_3c', outcome: 'best', reward: { dengshen: 20, jinshen: 3 }, summary: '你用谎言凝聚了村民的意志，集体的信念竟然短暂突破了腐化权柄。诞育神被你的创意震惊，给了满分！' },
+      { id: 'genesis_1_3c_alt', outcome: 'bad', reward: { dengshen: 4, jinshen: 0 }, summary: '你偷偷溜走了。仪式失去主持后立刻崩溃，村民陷入混乱。你跑了，但信任也跑光了。' },
+      { id: 'genesis_1_3d', outcome: 'mid', reward: { dengshen: 12, jinshen: 2 }, summary: '真相大白后村民陷入恐慌，但也有人因此获得了面对的勇气。' },
+      { id: 'genesis_1_3e', outcome: 'bad', reward: { dengshen: 5, jinshen: 0 }, summary: '你独自行动错过了最佳时机，更多村民惨死。队友开始怀疑你的动机。' },
+      { id: 'genesis_1_3e_alt', outcome: 'best', reward: { dengshen: 24, jinshen: 4 }, summary: `你用诞育之力净化了腐化之树——代价是你暂时失去了牧师能力。但诞育神亲手为你戴上了一枚"纯洁者"的徽章，这比任何天赋都珍贵。` }
+    ]
+  },
+
+  /* === 生命命途 · 死亡 === */
+  'death_1': {
+    id: 'death_1',
+    name: '守墓人的考验',
+    god: 'death',
+    path: '生命',
+    difficulty: 'B',
+    summary: '你站在一片无尽的墓园前。墓碑上刻着你认识的所有人的名字——包括你自己的。一位穿黑袍的守墓人告诉你：要通关，你必须从墓碑中选出一个"你最想让他活着的人"，但代价是你必须代替他死去。',
+    objective: '在抉择中找到真正的活路（死亡的权柄并不只意味着结束）',
+    scenes: [
+      {
+        title: '第一章 · 墓园',
+        text: [
+          '风穿过墓碑间的缝隙，发出像无数人低语的声音。',
+          '你走过一排排墓碑，看到了熟悉的名字：方诗晴、陆沉、阿铭……',
+          '还有——程实。',
+          '"欢迎来到我的墓园。"守墓人的声音像从地底传来，"死亡的试炼，从来都很公平。"',
+          '"规则很简单：选一个你想让他活的人。你代替他，成为这里的新守墓人。"',
+          '你感觉到【死亡】的目光。祂在看你的选择。'
+        ],
+        choices: [
+          { text: '选择陆沉', next: 'death_1_2a_mid', effects: { csTrust: 5 } },
+          { text: '选择方诗晴', next: 'death_1_2b_mid', effects: { trust: 3 } },
+          { text: '选择阿铭', next: 'death_1_2c_mid', effects: { trust: 0, doubt: 5 } },
+          { text: '不选择，试图与死亡谈判', next: 'death_1_2d_mid', effects: { mpCost: 15 } },
+          { text: '编造一个"更值得守护的人"并不存在', tag: 'lie', next: 'death_1_2e_mid', effects: { mpCost: 10 } },
+          { text: '【队友·协作】让新队友们先商量一下——这关系到所有人', tag: 'collab', next: 'death_1_2d_mid', effects: { trust: 10, mpCost: 5 } }
+        ]
+      },
+      {
+        id: 'death_1_2a_mid',
+        title: '陆沉的墓碑',
+        text: [
+          `你走向陆沉的墓碑。陆沉是队伍里最沉默的那一个——他几乎从不说话，但每次危险都会挡在你前面。`,
+          `但在你伸手触碰之前——墓碑上浮现了一行你从未见过的小字：`,
+          `"程实，你真的不记得我了吗？"`,
+          `你愣住了。你不记得认识这个人……但为什么，他的墓碑让你感到一种莫名的悲伤？`,
+          `守墓人在远处轻笑："有些关系，即使死亡也无法切断。但你选择遗忘了什么？"`
+        ],
+        choices: [
+          { text: '我想知道——告诉我真相', next: 'death_1_3a_secret', effects: { csTrust: 10, fear: 5 } },
+          { text: '不需要了。我的选择不会变。', next: 'death_1_3a', effects: { hpCost: 50 } }
+        ]
+      },
+      {
+        id: 'death_1_2b_mid',
+        title: '方诗晴的墓碑',
+        text: [
+          `你站在方诗晴的墓碑前。奇怪的是——她的墓碑和其他人不一样。`,
+          `它是温热的。`,
+          `"有趣的选择。"守墓人说，"但你有没有想过——方诗晴她自己，愿不愿意被你这样选择？"`,
+          `一个尖锐的问题。死亡在考验的不只是你的选择，还有——你的选择是否尊重了对方的意志。`
+        ],
+        choices: [
+          { text: '她会的。因为我们是队友。', next: 'death_1_3c' },
+          { text: '她值得活下去。不管她愿不愿意。', next: 'death_1_3d' },
+          { text: '……因为我喜欢她。', next: 'death_1_3e' }
+        ]
+      },
+      {
+        id: 'death_1_2c_mid',
+        title: '阿铭的真实',
+        text: [
+          `你选择了阿铭。但当你走到他墓碑前时，发现上面还有一行字：`,
+          `"此碑下无人。——死亡留"`,
+          `阿铭根本没死。他的墓碑是个假的。`,
+          `守墓人看着你："你选了一个活人的墓碑。为什么？"`,
+          `你突然意识到——阿铭可能就是这场试炼的设计参与者之一。`
+        ],
+        choices: [
+          { text: '"因为我想看看——到底谁在操控这一切。"', next: 'death_1_3f', effects: { csTrust: 10 } },
+          { text: '"随便选的。"', next: 'death_1_3g', effects: { doubt: 10 } },
+          { text: '【队友·欺骗】说谎说"因为我知道他在伪装死亡"', tag: 'lie', next: 'death_1_3f', effects: { trust: -5, csTrust: -3, mpCost: 5 } }
+        ]
+      },
+      {
+        id: 'death_1_2d_mid',
+        title: '谈判的筹码',
+        text: [
+          `你走向守墓人——不是为了选墓碑，而是为了谈判。`,
+          `但你需要筹码。你有什么东西是死亡想要的？`,
+          `死亡看着你："我什么都不缺。但你有一样东西——其他信徒很少有的：你有一个说谎的天赋。"`,
+          `"你可以对死人说谎，让他们相信自己还活着。你愿意用这个能力，来"管理"我的墓园吗？"`
+        ],
+        choices: [
+          { text: '答应：用谎言让死人被铭记', tag: 'lie', next: 'death_1_3h', effects: { mpCost: 20, csTrust: -5 } },
+          { text: '拒绝：死亡不该被欺骗', next: 'death_1_3i', effects: { csTrust: 10 } },
+          { text: '【队友·策略讨论】让队友出谋划策——怎么谈判才能最大化收益', tag: 'strategy', next: 'death_1_3i', effects: { trust: 8, mpCost: 10 } }
+        ]
+      },
+      {
+        id: 'death_1_2e_mid',
+        title: '死亡的挑战',
+        text: [
+          `你试图用谎言逃避选择。死亡笑了。`,
+          `"死亡不接受谎言。"祂说，"但如果你能让我相信——谎言在死亡面前也有意义……"`,
+          `一个苛刻的条件。死亡本身就是"终结"的化身，你要怎么让祂相信谎言有意义？`,
+          `但【欺诈】的核心理念就是"让谎言成真"。`
+        ],
+        choices: [
+          { text: '讲述程实自己的故事：一个用谎言保护亲人的人', next: 'death_1_3j', effects: { mpCost: 25, csTrust: -5 } },
+          { text: '【献往虚无的祭品】——编造"有人记得就不算真正死亡"', tag: 'talent', next: 'death_1_3k', effects: { mpCost: 30, csTrust: -10 } },
+          { text: '【队友·欺骗】让队友配合你演戏——假装他们死后你用谎言让他们"活"过来了', tag: 'lie', next: 'death_1_3k', effects: { trust: -15, csTrust: -10, mpCost: 15 } }
+        ]
+      },
+      {
+        id: 'death_1_2a',
+        allowLieTrigger: true,
+        title: '陆沉',
+        text: [
+          '你走到陆沉的墓碑前。陆沉是队伍里最沉默的人，每次危险都会挡在你前面。',
+          '"愿意为了他去死？"守墓人似笑非笑，"好孩子。但你确定——死亡真的能让他活过来吗？"',
+          '"你知道的。死亡只是终结。如果他注定要在这里，你的牺牲……毫无意义。"',
+          '你愣住了。死亡说的对。你愿意为一个队友死，但如果死亡不能复活他，你的选择就是纯粹的自我毁灭。',
+          '【死亡】在考验你的情感深度，还是在考验你的理性？'
+        ],
+        choices: [
+          { text: '依然选择牺牲自己', next: 'death_1_3a', effects: { hpCost: 50 } },
+          { text: '转身寻找其他出路', next: 'death_1_3b' }
+        ]
+      },
+      {
+        id: 'death_1_2b',
+        title: '方诗晴',
+        text: [
+          '方诗晴是你队伍中最聪明的存在，【真理】的信徒。',
+          '"选择队友？"守墓人挑眉，"你们的友谊，值得一条命？"',
+          '你意识到守墓人在观察你。死亡不在乎你选谁，但在乎——你为什么选。',
+          '你的理由，决定了这个选择的"质量"。'
+        ],
+        choices: [
+          { text: '"她比我更有用，这个队伍需要她。"', next: 'death_1_3c' },
+          { text: '"朋友之间，本就该互相牺牲。"', next: 'death_1_3d' },
+          { text: '"因为……我喜欢她。"', next: 'death_1_3e' }
+        ]
+      },
+      {
+        id: 'death_1_2c',
+        title: '阿铭',
+        text: [
+          '阿铭是个身份存疑的【秩序】信徒，有时候你分不清他是敌是友。',
+          '"有趣。"守墓人眼中闪过一丝异色，"你选了一个可能会在背后捅你刀子的人。为什么？"',
+          '你感觉到【死亡】的注意力被吸引了。这个选择，似乎出乎祂的意料。'
+        ],
+        choices: [
+          { text: '"因为我想知道，如果换成他，他会不会选我。"', next: 'death_1_3f' },
+          { text: '"随便选的，凑数。"', next: 'death_1_3g', effects: { doubt: 10 } }
+        ]
+      },
+      {
+        id: 'death_1_2d',
+        title: '谈判',
+        text: [
+          '"死亡并非只能单向终结。"你说，"你是生命命途的一员，死亡是生命循环的一部分——你可以收割，也可以返还。"',
+          '守墓人沉默了。风停了一瞬，所有墓碑上的照片都微微亮了一下。',
+          '"有意思。"祂说，"很久没有人注意到这一点了。那你想怎么谈？"',
+          '【死亡】给了你谈判的机会——这已经是巨大的信任。'
+        ],
+        choices: [
+          { text: '"让所有人都活下去，我可以帮你管理墓园（用谎言让"死人"被铭记）。"', tag: 'lie', next: 'death_1_3h', effects: { mpCost: 20 } },
+          { text: '"让我用另一种方式"代替"——比如，我来做你的信使，把死亡的意义传递给活人。"', next: 'death_1_3i' }
+        ]
+      },
+      {
+        id: 'death_1_2e',
+        title: '谎言挑战',
+        text: [
+          '"我编不出来。"守墓人说，"死亡不接受谎言。"',
+          '祂顿了顿，又说："但如果你能让我相信——谎言在死亡面前也有意义……"',
+          '你明白了。你必须编织一个关于"死亡之后仍有东西存在"的故事——并让【死亡】相信它。',
+          '这几乎是不可能的任务。但【欺诈】的权柄，正是"让谎言成真"。'
+        ],
+        choices: [
+          { text: '讲述程实自己的故事：一个用谎言保护亲人的人', next: 'death_1_3j', effects: { mpCost: 25, csTrust: -5 } },
+          { text: '尝试【献往虚无的祭品】——编造"有人记得就不算真正死亡"', tag: 'talent', next: 'death_1_3k', effects: { mpCost: 30, csTrust: -10 } }
+        ]
+      },
+      // 结果
+      { id: 'death_1_3a', outcome: 'mid', reward: { dengshen: 10, jinshen: 2 }, summary: '死亡认可了你的情感，但批评了你的冲动。你失去了一半血量，但陆沉的墓碑裂开了一道缝。' },
+      { id: 'death_1_3a_secret', outcome: 'best', reward: { dengshen: 28, jinshen: 4 }, summary: `你选择知道真相——陆沉不是自然死亡，他是为了把你从某个你不愿提起的深渊中拉出来，主动拥抱了死亡。但你选择了遗忘，把这段记忆封印了起来。死亡被这个故事感动了："原来被遗忘的爱，比被记住的更重。"祂不仅让陆沉活了，还给了你一个"死亡见证者"的称号。` },
+      { id: 'death_1_3b', outcome: 'good', reward: { dengshen: 16, jinshen: 2 }, summary: '你找到了第三选择——不牺牲任何人。死亡欣赏了你的智慧。' },
+      { id: 'death_1_3c', outcome: 'mid', reward: { dengshen: 8, jinshen: 1 }, summary: '理性的理由让死亡有些失望——她想要的是真心。' },
+      { id: 'death_1_3d', outcome: 'good', reward: { dengshen: 18, jinshen: 3 }, summary: '死亡看到了你的诚意。方诗晴的墓碑开始发光。' },
+      { id: 'death_1_3e', outcome: 'best', reward: { dengshen: 22, jinshen: 3 }, summary: '最不理性的回答最打动了死亡。祂说："死亡不消灭爱，它只是让爱更清晰。"所有墓碑都亮了。' },
+      { id: 'death_1_3f', outcome: 'good', reward: { dengshen: 15, jinshen: 2 }, summary: '死亡欣赏了你的坦诚与勇气。阿铭的墓碑微微倾斜——似乎在感激你的选择。' },
