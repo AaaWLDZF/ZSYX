@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- 开始界面 -->
   <div id="title-screen" class="screen active">
     <div class="title-bg"></div>
     <div class="title-content">
@@ -27,44 +28,98 @@
       <p class="version-tag">v0.2 · 基于《诸神愚戏》前248章设定</p>
     </div>
   </div>
+
+  <!-- 主界面 -->
   <div id="main-screen" class="screen">
     <header class="game-header">
-      <div class="header-left"><span class="header-title">信仰试炼</span></div>
+      <div class="header-left">
+        <span class="header-title">信仰试炼</span>
+      </div>
       <div class="header-right">
         <span class="score-badge">登神: <b id="score-dengshen">0</b></span>
         <span class="score-badge">觐神: <b id="score-jinshen">0</b></span>
         <button class="icon-btn" onclick="Game.showMenu()">☰</button>
       </div>
     </header>
+
     <main class="game-main">
+      <!-- 主控角色面板 -->
       <section class="panel panel-chengshi">
-        <div class="panel-header"><span class="char-name">程实</span><span class="char-faith" id="cs-faith">【欺诈】信徒</span></div>
-        <div class="stats-row">
-          <div class="stat-bar"><div class="stat-label">血量</div><div class="stat-bar-bg"><div class="stat-bar-fill hp" id="cs-hp-fill"></div></div><div class="stat-num"><span id="cs-hp">100</span>/100</div></div>
-          <div class="stat-bar"><div class="stat-label">精神</div><div class="stat-bar-bg"><div class="stat-bar-fill mp" id="cs-mp-fill"></div></div><div class="stat-num"><span id="cs-mp">100</span>/100</div></div>
-          <div class="stat-bar"><div class="stat-label">可信</div><div class="stat-bar-bg"><div class="stat-bar-fill trust" id="cs-trust-fill"></div></div><div class="stat-num"><span id="cs-trust">50</span>/100</div></div>
-          <div class="stat-bar jinshen-only hidden" id="cs-fear-wrap"><div class="stat-label">恐惧</div><div class="stat-bar-bg"><div class="stat-bar-fill fear" id="cs-fear-fill"></div></div><div class="stat-num"><span id="cs-fear">0</span>/100</div></div>
+        <div class="panel-header">
+          <span class="char-name">程实</span>
+          <span class="char-faith" id="cs-faith">【欺诈】信徒</span>
         </div>
-        <div class="talent-row" id="cs-talents"></div>
-        <div class="item-row" id="cs-items"></div>
+        <div class="stats-row">
+          <div class="stat-bar">
+            <div class="stat-label">血量</div>
+            <div class="stat-bar-bg"><div class="stat-bar-fill hp" id="cs-hp-fill"></div></div>
+            <div class="stat-num"><span id="cs-hp">100</span>/100</div>
+          </div>
+          <div class="stat-bar">
+            <div class="stat-label">精神</div>
+            <div class="stat-bar-bg"><div class="stat-bar-fill mp" id="cs-mp-fill"></div></div>
+            <div class="stat-num"><span id="cs-mp">100</span>/100</div>
+          </div>
+          <div class="stat-bar">
+            <div class="stat-label">可信</div>
+            <div class="stat-bar-bg"><div class="stat-bar-fill trust" id="cs-trust-fill"></div></div>
+            <div class="stat-num"><span id="cs-trust">50</span>/100</div>
+          </div>
+          <div class="stat-bar jinshen-only hidden" id="cs-fear-wrap">
+            <div class="stat-label">恐惧</div>
+            <div class="stat-bar-bg"><div class="stat-bar-fill fear" id="cs-fear-fill"></div></div>
+            <div class="stat-num"><span id="cs-fear">0</span>/100</div>
+          </div>
+        </div>
+        <div class="talent-row" id="cs-talents">
+          <!-- 天赋标签动态生成 -->
+        </div>
+        <div class="item-row" id="cs-items">
+          <!-- 道具动态生成 -->
+        </div>
       </section>
+
+      <!-- 队友面板 -->
       <section class="panel panel-teammates" id="teammates-panel">
-        <div class="panel-header"><span>队友</span><button class="btn-link" onclick="Game.showTeammateDetail()">查看详情</button></div>
-        <div class="teammates-list" id="teammates-list"></div>
+        <div class="panel-header">
+          <span>队友</span>
+          <button class="btn-link" onclick="Game.showTeammateDetail()">查看详情</button>
+        </div>
+        <div class="teammates-list" id="teammates-list">
+          <!-- 队友动态生成 -->
+        </div>
       </section>
+
+      <!-- 剧情显示区 -->
       <section class="panel panel-story">
-        <div class="panel-header"><span class="scene-title" id="scene-title">序章</span><span class="scene-phase" id="scene-phase"></span></div>
-        <div class="story-content" id="story-content"></div>
+        <div class="panel-header">
+          <span class="scene-title" id="scene-title">序章</span>
+          <span class="scene-phase" id="scene-phase"></span>
+        </div>
+        <div class="story-content" id="story-content">
+          <!-- 剧情文本动态显示 -->
+        </div>
       </section>
+
+      <!-- 选择面板 -->
       <section class="panel panel-choices" id="choices-panel">
-        <div class="choices-list" id="choices-list"></div>
+        <div class="choices-list" id="choices-list">
+          <!-- 选择动态生成 -->
+        </div>
       </section>
+
+      <!-- 谎言编织面板（程实专属） -->
       <section class="panel panel-lie hidden" id="lie-panel">
-        <div class="panel-header"><span>🎭 谎言编织</span><button class="btn-link" onclick="Game.closeLiePanel()">收起</button></div>
+        <div class="panel-header">
+          <span>🎭 谎言编织</span>
+          <button class="btn-link" onclick="Game.closeLiePanel()">收起</button>
+        </div>
         <p class="lie-hint" id="lie-hint">选择编织一个谎言...</p>
         <div class="lie-options" id="lie-options"></div>
       </section>
     </main>
+
+    <!-- 底部操作栏 -->
     <footer class="game-footer">
       <button class="footer-btn" onclick="Game.useTalent()" id="talent-btn">✨ 天赋</button>
       <button class="footer-btn" onclick="Game.openLiePanel()" id="open-lie-btn">🎭 谎言</button>
@@ -73,15 +128,27 @@
       <button class="footer-btn" onclick="Game.showHelp()">📖 说明</button>
     </footer>
   </div>
+
+  <!-- 弹窗容器 -->
   <div id="modal-overlay" class="modal-overlay hidden" onclick="Game.closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-header"><h3 id="modal-title"></h3><button class="modal-close" onclick="Game.closeModal()">✕</button></div>
+      <div class="modal-header">
+        <h3 id="modal-title"></h3>
+        <button class="modal-close" onclick="Game.closeModal()">✕</button>
+      </div>
       <div class="modal-body" id="modal-body"></div>
       <div class="modal-footer" id="modal-footer"></div>
     </div>
   </div>
+
+  <!-- Toast 提示 -->
   <div id="toast-container" class="toast-container"></div>
-  <div id="typing-indicator" class="typing-indicator hidden"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+
+  <!-- 选项卡选择提示 -->
+  <div id="typing-indicator" class="typing-indicator hidden">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </div>
+
   <script src="js/data.js"></script>
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
