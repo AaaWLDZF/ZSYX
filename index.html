@@ -6,21 +6,37 @@
   <meta name="theme-color" content="#1a0a1f">
   <meta name="format-detection" content="telephone=no">
   <title>诸神愚戏 · 信仰试炼</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=0.3">
 </head>
 <body>
   <!-- 开始界面 -->
   <div id="title-screen" class="screen active">
     <div class="title-bg"></div>
     <div class="title-content">
-      <div class="eye-icon">
-        <div class="eye-layer eye-outer"></div>
-        <div class="eye-layer eye-mid"></div>
-        <div class="eye-layer eye-inner"></div>
-        <div class="eye-layer eye-pupil"></div>
-        <div class="eye-layer eye-glow"></div>
-        <div class="eye-layer eye-vignette"></div>
-      </div>
+      <svg class="eye-svg" viewBox="0 0 220 170" aria-hidden="true">
+        <g class="eye-rays">
+          <line x1="110" y1="21" x2="110" y2="5"/>
+          <line x1="142" y1="29.6" x2="150" y2="15.7"/>
+          <line x1="78" y1="29.6" x2="70" y2="15.7"/>
+          <line x1="165.4" y1="53" x2="179.3" y2="45"/>
+          <line x1="54.6" y1="53" x2="40.7" y2="45"/>
+          <line x1="78" y1="140.4" x2="70" y2="154.3"/>
+          <line x1="142" y1="140.4" x2="150" y2="154.3"/>
+          <line x1="110" y1="149" x2="110" y2="165"/>
+        </g>
+        <g class="eye-dots">
+          <circle cx="171.5" cy="23.5" r="1.7"/>
+          <circle cx="48.5" cy="23.5" r="1.7"/>
+          <circle cx="171.5" cy="146.5" r="1.7"/>
+          <circle cx="48.5" cy="146.5" r="1.7"/>
+        </g>
+        <path class="eye-lid" d="M25 85 C55 43 165 43 195 85 C165 127 55 127 25 85 Z"/>
+        <path class="eye-lid-accent" d="M45 69 C70 40 150 40 175 69"/>
+        <circle class="eye-iris" cx="110" cy="85" r="27"/>
+        <circle class="eye-iris-ring" cx="110" cy="85" r="17.5"/>
+        <circle class="eye-pupil" cx="110" cy="85" r="7"/>
+        <circle class="eye-spark" cx="117" cy="78" r="2.4"/>
+      </svg>
       <h1 class="game-title">诸神愚戏</h1>
       <p class="game-subtitle">· 信仰试炼 ·</p>
       <p class="game-quote">"我做人有两个原则：从不骗人，从不相信任何人说的话"</p>

@@ -66,110 +66,97 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-align: center;
   max-width: 420px;
 }
-/* 意识流风格眼睛 — 多层模糊光晕 + 呼吸 + 缓慢漂移 */
-.eye-icon {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
-  animation: eyeBreath 6s ease-in-out infinite;
+/* SVG 线稿风格眼睛 — 描边线条构成 + 射线旋转 + 落笔动画 */
+.eye-svg {
+  width: 150px;
+  height: auto;
+  display: block;
+  margin: 0 auto 6px;
+  animation: eyeFloat 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 14px rgba(155, 89, 182, 0.4));
 }
-.eye-layer {
-  position: absolute;
-  border-radius: 50%;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
+.eye-svg path,
+.eye-svg circle,
+.eye-svg line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-/* 最外层 — 极度模糊的大光晕 */
-.eye-outer {
-  width: 160px; height: 160px;
-  background: radial-gradient(circle,
-    rgba(155, 89, 182, 0.35) 0%,
-    rgba(192, 57, 43, 0.18) 40%,
-    rgba(212, 168, 67, 0.05) 70%,
-    transparent 100%);
-  filter: blur(20px);
-  animation: eyeDrift1 12s ease-in-out infinite;
+.eye-svg .eye-rays {
+  transform-origin: 110px 85px;
+  animation: raysSpin 26s linear infinite;
 }
-/* 中层 — 虹膜状色带 */
-.eye-mid {
-  width: 110px; height: 110px;
-  background: radial-gradient(circle at 35% 35%,
-    rgba(232, 217, 240, 0.4) 0%,
-    rgba(155, 89, 182, 0.3) 25%,
-    rgba(192, 57, 43, 0.2) 55%,
-    rgba(30, 20, 40, 0.5) 85%,
-    transparent 100%);
-  filter: blur(8px);
-  animation: eyeDrift2 9s ease-in-out infinite;
+.eye-svg .eye-rays line {
+  stroke: var(--accent-gold);
+  stroke-width: 1.6;
+  opacity: 0.85;
 }
-/* 内层 — 半透明球体 */
-.eye-inner {
-  width: 70px; height: 70px;
-  background: radial-gradient(circle at 30% 30%,
-    rgba(232, 217, 240, 0.5) 0%,
-    rgba(155, 89, 182, 0.4) 50%,
-    rgba(30, 20, 40, 0.7) 100%);
-  filter: blur(2px);
-  animation: eyeBreath 6s ease-in-out infinite;
+.eye-svg .eye-dots circle {
+  fill: var(--accent-gold);
+  animation: dotsTwinkle 3.2s ease-in-out infinite;
 }
-/* 瞳孔 */
-.eye-pupil {
-  width: 14px; height: 14px;
-  background: radial-gradient(circle,
-    #0a0510 0%,
-    #2a1a3a 70%,
-    transparent 100%);
-  box-shadow: 0 0 12px rgba(155, 89, 182, 0.8),
-              0 0 25px rgba(192, 57, 43, 0.4);
-  animation: eyePupil 5s ease-in-out infinite;
+.eye-svg .eye-lid {
+  stroke: #c9a2e8;
+  stroke-width: 2.2;
+  stroke-dasharray: 460;
+  stroke-dashoffset: 460;
+  animation: eyeDraw 1.8s ease-out 0.1s forwards;
 }
-/* 高光 */
-.eye-glow {
-  width: 20px; height: 20px;
-  background: radial-gradient(circle,
-    rgba(232, 217, 240, 0.9) 0%,
-    rgba(155, 89, 182, 0.3) 50%,
-    transparent 100%);
-  top: 38%; left: 42%;
-  transform: none;
-  filter: blur(2px);
-  animation: eyeGlow 4s ease-in-out infinite;
+.eye-svg .eye-lid-accent {
+  stroke: rgba(155, 89, 182, 0.55);
+  stroke-width: 1.2;
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: eyeDraw 1.4s ease-out 0.7s forwards;
 }
-/* 暗角 */
-.eye-vignette {
-  width: 180px; height: 180px;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
-  filter: blur(5px);
-  animation: eyeVignette 8s ease-in-out infinite;
+.eye-svg .eye-iris {
+  stroke: var(--accent-purple);
+  stroke-width: 2;
+  stroke-dasharray: 175;
+  stroke-dashoffset: 175;
+  animation: eyeDraw 1.5s ease-out 0.4s forwards;
 }
-@keyframes eyeBreath {
-  0%, 100% { transform: scale(1); opacity: 0.95; }
-  50% { transform: scale(1.05); opacity: 1; }
+.eye-svg .eye-iris-ring {
+  stroke: var(--accent-gold);
+  stroke-width: 1.4;
+  stroke-dasharray: 115;
+  stroke-dashoffset: 115;
+  animation: eyeDraw 1.3s ease-out 0.8s forwards;
 }
-@keyframes eyeDrift1 {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  33% { transform: translate(-52%, -48%) scale(1.02); }
-  66% { transform: translate(-48%, -51%) scale(0.98); }
+.eye-svg .eye-pupil {
+  fill: #0a0510;
+  stroke: var(--accent-gold);
+  stroke-width: 1.2;
+  transform-origin: 110px 85px;
+  animation: pupilPulse 3.5s ease-in-out infinite;
 }
-@keyframes eyeDrift2 {
-  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
-  50% { transform: translate(-50%, -50%) rotate(5deg); }
+.eye-svg .eye-spark {
+  fill: #e8d9f0;
+  stroke: none;
+  animation: sparkTwinkle 2.6s ease-in-out infinite;
 }
-@keyframes eyePupil {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  25% { transform: translate(-47%, -53%) scale(1.05); }
-  50% { transform: translate(-53%, -47%) scale(0.95); }
-  75% { transform: translate(-48%, -48%) scale(1.02); }
+@keyframes eyeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
-@keyframes eyeGlow {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
+@keyframes eyeDraw {
+  to { stroke-dashoffset: 0; }
 }
-@keyframes eyeVignette {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 0.9; }
+@keyframes raysSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes pupilPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+@keyframes sparkTwinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes dotsTwinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
 .game-title {
   font-size: 48px;
