@@ -66,20 +66,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-align: center;
   max-width: 420px;
 }
-/* emoji 眼睛（原始版） */
+/* 意识流风格眼睛 — 多层模糊光晕 + 呼吸 + 缓慢漂移 */
 .eye-icon {
-  font-size: 64px;
-  animation: eyeFloat 3s ease-in-out infinite;
-  display: inline-block;
-  filter: drop-shadow(0 0 20px rgba(155, 89, 182, 0.7));
-  line-height: 1;
-}
-@keyframes eyeFloat {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.08); }
-}
-/* 意识流风格眼睛 — 多层模糊光晕 + 呼吸 + 缓慢漂移（备用） */
-.eye-icon.consciousness-stream {
   position: relative;
   width: 120px;
   height: 120px;
