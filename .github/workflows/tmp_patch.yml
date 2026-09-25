@@ -1,0 +1,20 @@
+name: tmp patch eye
+on:
+  push:
+    paths: ['_patch/patch.py', '.github/workflows/tmp_patch.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply eye patch
+        run: python3 _patch/patch.py
+      - name: Commit and push
+        run: |
+          git config user.name "patch-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html css/style.css
+          git diff --cached --quiet && echo "no change" || (git commit -m "style: restore layered line-art eye on title screen" && git push)
