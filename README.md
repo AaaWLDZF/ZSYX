@@ -29,3 +29,7 @@ https://aaawldzf.github.io/ZSYX/
 ## 自动部署
 
 仓库配置了 GitHub Actions（`.github/workflows/deploy.yml`）：每次推送到 `main` 分支自动执行 JS 语法检查（`node --check`）与必需文件校验，通过后自动部署到 GitHub Pages。
+
+## 更新日志
+
+- **2026-09-25**：项目上线 GitHub Pages，启用自动构建与部署流水线。
