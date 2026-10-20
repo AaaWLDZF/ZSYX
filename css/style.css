@@ -860,3 +860,36 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .game-title { font-size: 36px; }
   .story-content { max-height: 180px; }
 }
+
+/* ===== 旗标栏 ===== */
+.flags-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  min-height: 24px;
+  background: rgba(230, 180, 80, 0.05);
+  border: 1px solid rgba(230, 180, 80, 0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.flags-label {
+  font-size: 11px;
+  color: var(--accent-gold, #e6b450);
+  letter-spacing: 2px;
+}
+.flags-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+.flag-tag {
+  font-size: 11px;
+  color: var(--accent-gold, #e6b450);
+  background: rgba(230, 180, 80, 0.12);
+  border: 1px solid rgba(230, 180, 80, 0.4);
+  border-radius: 3px;
+  padding: 1px 8px;
+  animation: fadeIn 0.4s ease;
+}
