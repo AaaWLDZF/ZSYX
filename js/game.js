@@ -127,6 +127,10 @@ const Game = {
     achievements: [],
     achievementTimes: {}, // 成就解锁时间戳（id -> 时间戳），跨轮回保留
     easterEggs: [],
+    // 试炼旗标（每场试炼独立，结算后清空）
+    trialFlags: [],
+    // 假面背包（跨轮回持久收藏）
+    maskBag: [],
     // 已触发天赋冷却记录
     cooldowns: {},
     // 谎言编织面板的上下文
@@ -346,7 +350,8 @@ const Game = {
   },
 
   /* ===== 随机生成队友 ===== */
-  generateTeammates() {
+  generateTeammates(spec) {
+    this.state.teammates = [];
     const faiths = Object.keys(DATA_FAITHS);
     const classes = DATA_CLASSES.slice(); // 6种职业
     const personalities = DATA_TEAMMATE_PERSONALITIES.slice();
@@ -355,6 +360,9 @@ const Game = {
     const count = 5; // 加上程实共6人
     
     for (let i = 0; i < count; i++) {
+      // 试炼可指定前N名队友的信仰与职业（allySpec），其余随机
+      const sp = (spec && spec[i]) || null;
+      
       // 选名字
       let name;
       do {
@@ -362,18 +370,30 @@ const Game = {
       } while (usedNames.has(name));
       usedNames.add(name);
       
-      // 选信仰（避开程实的欺诈，避开对立信仰）
+      // 选信仰（避开程实的欺诈，避开对立队友；allySpec 直接指定）
       let faith;
-      do {
-        faith = faiths[Math.floor(Math.random() * faiths.length)];
-      } while (
-        faith === 'fraud' || // 不要欺诈
-        (this.state.teammates.some(t => DATA_OPPOSITES[t.faith] === faith)) // 避免对立队友
-      );
+      if (sp && DATA_FAITHS[sp.faith]) {
+        faith = sp.faith;
+      } else {
+        do {
+          faith = faiths[Math.floor(Math.random() * faiths.length)];
+        } while (
+          faith === 'fraud' || // 不要欺诈
+          (this.state.teammates.some(t => DATA_OPPOSITES[t.faith] === faith)) // 避免对立队友
+        );
+      }
       
-      // 选职业
-      const charClass = classes[Math.floor(Math.random() * classes.length)];
+      // 选职业（baseClass 决定组合，classLabel 仅用于展示）
+      let charClass;
+      if (sp && DATA_CLASSES.includes(sp.charClass)) {
+        charClass = sp.charClass;
+      } else if (sp && sp.baseClass && DATA_CLASSES.includes(sp.baseClass)) {
+        charClass = sp.baseClass;
+      } else {
+        charClass = classes[Math.floor(Math.random() * classes.length)];
+      }
       const charClassName = DATA_CLASS_COMBOS[faith][charClass];
+      const classLabel = (sp && sp.classLabel) || charClass;
       
       // 选性格
       const personality = personalities[Math.floor(Math.random() * personalities.length)];
@@ -388,6 +408,8 @@ const Game = {
         pathName: faithInfo.path,
         charClass: charClass,
         charClassName: charClassName,
+        classLabel: classLabel,
+        ladder: 1900 + Math.floor(Math.random() * 451), // 天梯分展示用
         personality: personality.id,
         personalityName: personality.name,
         personalityTrait: personality.trait,
@@ -424,47 +446,90 @@ const Game = {
     return remarks[faith] || '神秘莫测的存在';
   },
 
-  /* ===== 进入试炼 ===== */
+  /* ===== 进入试炼（开场严格按指定文件格式：特殊试练开启→匹配队友→试练目标→开场正文→六人名单）===== */
   enterTrial(trialId) {
     try {
-      // 每场试炼自动换全新队友组合
-      this.generateTeammates();
-      
       const trial = DATA_TRIALS[trialId];
       if (!trial) {
         console.error('[Game] enterTrial: trial not found:', trialId);
         this.startTrial();
         return;
       }
-      
+
+      // 每场试炼自动换全新队友组合（试炼可用 allySpec 指定队友信仰/职业）
+      this.generateTeammates(trial.allySpec);
+
       this._currentTrialId = trialId;
       this.state.currentTrial = trial;
+      this.state.trialFlags = ['献往虚无的祭品']; // 旗标每场独立；程实天赋常驻
       this.state.currentScene = trial.scenes.find(s => s.title && !s.outcome);
-      
+
       this.visitedScenes = new Set();
       this._choiceSteps = 0;
       this._pendingEnding = null;
       this.state.storyLog = [];
-      
+
       const content = document.getElementById('story-content');
       if (content) content.innerHTML = '';
-      
+
       this.trialCount++;
-      
+
       UI.setSceneTitle(trial.name);
       UI.setScenePhase(`难度: ${trial.difficulty} | 命途: ${trial.path}`);
-      
-      this.addStoryLine('旁白', trial.summary, 'narration');
-      this.addStoryLine('旁白', `【目标】${trial.objective}`, 'narration');
-      
+      UI.renderFlags();
+
+      const faithInfo = DATA_FAITHS[trial.god] || {};
+      const opening = Array.isArray(trial.opening) ? trial.opening : [];
+      const step = 550;
+
+      // ①【特殊试练（名【神】）已开启】 ②【正在匹配队友（1/6）】 ③【试练目标（限时N天）】
+      this.addStoryLine('旁白', `【特殊试练（${trial.name}【${faithInfo.name || trial.path}】）已开启】`, 'narration');
+      this.addStoryLine('旁白', '【正在匹配队友（1/6）】', 'narration');
+      this.addStoryLine('旁白', `【试练目标：${trial.objective}（限时${trial.days || 5}天）】`, 'narration');
+
+      // ④ 开场正文
+      opening.forEach((line, idx) => {
+        setTimeout(() => {
+          this.addStoryLine('旁白', this._fmtTokens(line), 'narration');
+        }, idx * step);
+      });
+
+      // ⑤ 六人名单（动态生成：队友随机，格式与指定文件一致）
+      let tIdx = opening.length;
+      const pl = 2141 + (this.state.score_dengshen || 0);
+      const rosterLines = [
+        `- ${this.state.chengshi.name}，【${this.state.chengshi.pathName}】，${this.state.chengshi.charClass}，天梯${pl}`
+      ].concat(this.state.teammates.map(t =>
+        `- ${t.name}，【${DATA_FAITHS[t.faith] ? DATA_FAITHS[t.faith].path : t.pathName}】，${t.classLabel || t.charClass}，天梯${t.ladder}`
+      ));
+      rosterLines.forEach(line => {
+        setTimeout(() => {
+          this.addStoryLine('旁白', line, 'narration');
+        }, tIdx++ * step);
+      });
+
+      // ⑥ 进入第一幕（开场最后一行显示后 1.2s）
       const firstScene = trial.scenes.find(s => s.title && !s.outcome);
       if (firstScene) {
-        this.loadScene(firstScene);
+        setTimeout(() => {
+          this.loadScene(firstScene);
+        }, (tIdx + 2) * step);
       }
     } catch(e) {
       console.error('[Game] enterTrial crash:', e);
       this.toast('试炼加载异常', 'error');
     }
+  },
+
+  /* ===== 文本令牌替换：{tm1}-{tm5} → 本场随机队友名 ===== */
+  _fmtTokens(line) {
+    if (typeof line !== 'string' || line.indexOf('{tm') === -1) return line;
+    const t = Array.isArray(this.state.teammates) ? this.state.teammates : [];
+    for (let i = 0; i < 5; i++) {
+      const re = new RegExp('\\{tm' + (i + 1) + '\\}', 'g');
+      line = line.replace(re, t[i] ? t[i].name : '队友');
+    }
+    return line;
   },
 
   /* ===== 加载场景 ===== */
@@ -474,27 +539,89 @@ const Game = {
       if (this.visitedScenes.has(sceneData.id)) return;
       this.visitedScenes.add(sceneData.id);
     }
-    
+
     this.currentSceneData = sceneData;
-    
+
     // 清除旧的选择
     UI.clearChoices();
-    
+
     // 显示剧情文本
     sceneData.text.forEach((line, idx) => {
       setTimeout(() => {
-        this.addStoryLine('旁白', line, 'narration');
+        this.addStoryLine('旁白', this._fmtTokens(line), 'narration');
       }, idx * 800);
     });
-    
-    // 延迟显示选择
+
+    // 延迟显示选择（或执行旗标自动路由）
     setTimeout(() => {
+      // —— 旗标自动路由：按 route 顺序取第一个满足者跳转 ——
+      if (sceneData.autoRoute) {
+        const r = this._evalAutoRoute(sceneData.autoRoute);
+        if (r) {
+          if (r.note) this.addStoryLine('旁白', r.note, 'narration');
+          setTimeout(() => this._goto(r.next), 1000);
+          return;
+        }
+      }
       if (sceneData.choices && sceneData.choices.length > 0) {
-        // 有些选择可能需要条件检查
-        const availableChoices = sceneData.choices.filter(c => !c.condition || c.condition(this.state));
+        const availableChoices = sceneData.choices.filter(c => this._choiceVisible(c));
         UI.showChoices(availableChoices);
       }
     }, sceneData.text.length * 800 + 500);
+  },
+
+  /* ===== 旗标可见性判断 ===== */
+  _choiceVisible(c) {
+    if (typeof c.condition === 'function' && !c.condition(this.state)) return false;
+    const flags = this.state.trialFlags || [];
+    if (Array.isArray(c.require) && c.require.length && !c.require.every(f => flags.includes(f))) return false;
+    if (Array.isArray(c.requireAny) && c.requireAny.length && !c.requireAny.some(f => flags.includes(f))) return false;
+    if (Array.isArray(c.hideIf) && c.hideIf.length && c.hideIf.some(f => flags.includes(f))) return false;
+    return true;
+  },
+
+  /* ===== 旗标授予 ===== */
+  _grantFlags(flags) {
+    if (!Array.isArray(flags) || !flags.length) return;
+    flags.forEach(f => {
+      if (!this.state.trialFlags.includes(f)) {
+        this.state.trialFlags.push(f);
+        this.addStoryLine('旁白', `【获得旗标：${f}】`, 'narration');
+        UI.renderFlags();
+      }
+    });
+  },
+
+  /* ===== 旗标自动路由求值 ===== */
+  _evalAutoRoute(routes) {
+    const flags = this.state.trialFlags || [];
+    for (const r of routes) {
+      if (r.default) return r;
+      const okAll = !Array.isArray(r.all) || r.all.length === 0 || r.all.every(f => flags.includes(f));
+      const okAny = !Array.isArray(r.any) || r.any.length === 0 || r.any.some(f => flags.includes(f));
+      const okNone = !Array.isArray(r.none) || r.none.length === 0 || !r.none.some(f => flags.includes(f));
+      if (okAll && okAny && okNone) return r;
+    }
+    return null;
+  },
+
+  /* ===== 按key跳转（结局/场景统一入口）===== */
+  _goto(key) {
+    if (key === null || key === undefined) {
+      this.finishTrial(null);
+      return;
+    }
+    const nextScene = this.findSceneByKey(key);
+    if (nextScene) {
+      if (nextScene.outcome) {
+        this.finishTrial(nextScene);
+      } else {
+        this.loadScene(nextScene);
+      }
+    } else {
+      console.error('[Game] _goto: scene not found:', key);
+      this.toast('剧情跳转异常', 'error');
+    }
   },
 
   /* ===== 处理选择 ===== */
@@ -526,6 +653,26 @@ const Game = {
       if (choice.effects) {
         this.applyEffects(choice.effects);
       }
+
+      // 授予旗标
+      this._grantFlags(choice.flags);
+
+      // 随机分支（choice.random: [{p, next, note, flags?}]，p 为概率权重）
+      let nextKey = choice.next;
+      if (Array.isArray(choice.random) && choice.random.length) {
+        const total = choice.random.reduce((s, r) => s + (r.p || 1), 0);
+        let roll = Math.random() * total;
+        let picked = choice.random[choice.random.length - 1];
+        for (const r of choice.random) {
+          roll -= (r.p || 1);
+          if (roll <= 0) { picked = r; break; }
+        }
+        if (picked.note) {
+          this.addStoryLine('旁白', `🎲 ${picked.note}`, 'narration');
+        }
+        this._grantFlags(picked.flags);
+        nextKey = picked.next;
+      }
       
       // 检查血量是否为1成就
       if (this.state.chengshi.hp === 1) {
@@ -555,16 +702,12 @@ const Game = {
       }
 
     // 跳转到下一个场景
-      if (choice.next) {
-        const nextScene = this.findSceneByKey(choice.next);
-        if (nextScene) {
-          if (nextScene.outcome) {
-            this.finishTrial(nextScene);
-          } else {
-            this.loadScene(nextScene);
-          }
+      if (nextKey) {
+        if (choice.loopBack && this.visitedScenes) {
+          this.visitedScenes.clear(); // 回环重选：清空已访问记录
         }
-      } else if (choice.next === null) {
+        this._goto(nextKey);
+      } else if (nextKey === null) {
         this.finishTrial(null);
       }
     } catch(e) {
@@ -683,7 +826,7 @@ const Game = {
     }
   },
 
-  /* ===== 完成试炼 ===== */
+  /* ===== 完成试炼（先播结局正文，再结算；评分枚举：S/A/B/hidden/C；C=死亡即淘汰，无面板无加分）===== */
   finishTrial(outcomeScene) {
     // —— 幕间补足：本场选择次数不足 5 时，插入突发幕间场景，保证每次试炼至少 5 次选择机会 ——
     if (outcomeScene && (this._choiceSteps || 0) < 5) {
@@ -697,7 +840,33 @@ const Game = {
     }
     this._pendingEnding = null;
 
+    // —— 先展示结局正文（【结局S · 名】等），播完再进结算 ——
+    if (outcomeScene && Array.isArray(outcomeScene.text) && outcomeScene.text.length) {
+      UI.setScenePhase('结局');
+      UI.clearChoices();
+      outcomeScene.text.forEach((line, idx) => {
+        setTimeout(() => {
+          this.addStoryLine('旁白', this._fmtTokens(line), 'narration');
+        }, idx * 650);
+      });
+      setTimeout(() => this._finalizeTrial(outcomeScene), outcomeScene.text.length * 650 + 900);
+      return;
+    }
+    this._finalizeTrial(outcomeScene);
+  },
+
+  _finalizeTrial(outcomeScene) {
     try {
+      const outcome = outcomeScene ? outcomeScene.outcome : 'C';
+      // 评分C但存活（带 reward，如"新接生婆"）：走正常结算；无 reward 的 C = 淘汰
+      const gradedC = outcome === 'C' && !!(outcomeScene && outcomeScene.reward);
+
+      // —— C 结局：淘汰，无评分无面板 ——
+      if (outcome === 'C' && !gradedC) {
+        this.eliminatePlayer(outcomeScene);
+        return;
+      }
+
       // 记录已完成的试炼ID
       const trialId = this._currentTrialId || null;
       if (trialId && !this.state.completedTrials.includes(trialId)) {
@@ -705,10 +874,10 @@ const Game = {
       }
       // 单局试炼计数（打满 _runTrialTarget 触发终局结算）
       this._runTrialsDone = (this._runTrialsDone || 0) + 1;
-      
+
       // —— 试炼完成类成就（基于 trialCount 递增）——
       this.checkAchievements({});
-      
+
       // 更新队友死亡追踪
       const alive = this.state.teammates.filter(t => t.alive).length;
       const diedThisTrial = this.state.teammates.some(t => !t.alive);
@@ -717,67 +886,133 @@ const Game = {
       } else {
         this._safeStreak = 0;
       }
-      
-      let reward = { dengshen: 3, jinshen: 1 };
-      let summary = '试炼结束。';
-      let outcomeName = '及格';
-      let isBest = false;
-    
-    if (outcomeScene) {
-      reward = outcomeScene.reward || reward;
-      summary = outcomeScene.summary || summary;
-      
+
       const outcomeMap = {
-        best: { name: '完美通关', color: 'success' },
-        good: { name: '良好', color: 'success' },
-        mid: { name: '及格', color: 'warning' },
-        bad: { name: '失败', color: 'error' }
+        S: { name: 'S · 完美通关', color: 'success' },
+        A: { name: 'A · 优秀', color: 'success' },
+        B: { name: 'B · 及格', color: 'warning' },
+        C: { name: 'C · 勉强过关', color: 'warning' },
+        hidden: { name: '隐藏结局', color: 'error' }
       };
-      outcomeName = outcomeMap[outcomeScene.outcome]?.name || outcomeName;
-      isBest = outcomeScene.outcome === 'best';
-      
-      // —— 检查结局相关成就 ——
-      if (isBest) {
+
+      let reward = { dengshen: 0, jinshen: 0 };
+      let summary = '试炼结束。';
+      let masks = [];
+      if (outcomeScene) {
+        reward = outcomeScene.reward || reward;
+        summary = outcomeScene.summary || summary;
+        masks = Array.isArray(outcomeScene.masks) ? outcomeScene.masks : [];
+      }
+
+      // —— 结算假面入包（跨轮回收藏）——
+      const trial = this.state.currentTrial;
+      const maskLines = [];
+      masks.forEach(m => {
+        const count = m.count || 1;
+        for (let i = 0; i < count; i++) {
+          this.state.maskBag.push({
+            name: m.name,
+            rank: m.rank,
+            from: this._fmtTokens(m.from || '') || null,
+            trial: trial ? trial.name : '',
+            time: Date.now()
+          });
+        }
+        maskLines.push(`　🎭 ${m.name}（${m.rank}）×${count}${m.from ? ' —— ' + this._fmtTokens(m.from) : ''}`);
+      });
+
+      // —— 结局相关成就（S 评完美）——
+      if (outcome === 'S') {
         this.checkAchievements({ outcome: 'best' });
       }
-    }
-    
-    // 累加分数
-    this.state.score_dengshen = Math.max(0, this.state.score_dengshen + (reward.dengshen || 0));
-    this.state.score_jinshen += (reward.jinshen || 0);
-    // 恢复部分资源
-    this.state.chengshi.hp = Math.min(this.state.chengshi.hpMax, this.state.chengshi.hp + 20);
-    this.state.chengshi.mp = Math.min(this.state.chengshi.mpMax, this.state.chengshi.mp + 30);
-    
-    // 自动保存成绩到排行榜（实时排名更新）
-    const rank = this.saveToLeaderboard();
-    
-    UI.updateAllBars();
-    
-    // 显示结果
-    setTimeout(() => {
-      try {
-        this.showModal(
-          `试炼结果：${outcomeName}`,
-          `${summary}\n\n` +
-          `🏆 登神之路 +${reward.dengshen}分\n` +
-          `⭐ 觐见之梯 +${reward.jinshen}分\n\n` +
-          `【当前积分】\n登神之路：${this.state.score_dengshen}\n觐见之梯：${this.state.score_jinshen}\n` +
-          `🏆 天梯排名：第 ${rank || '—'} 名（共 50 名）` +
-          `\n\n【本轮进度】${this._runTrialsDone} / ${this._runTrialTarget} 场试炼`,
-          [
-            { text: '继续', action: () => { UI.closeModal(); this.afterTrial(); } }
-          ]
-        );
-      } catch(e) {
-        console.error('[Game] finishTrial modal crash:', e);
+
+      // 累加分数（登神允许负数结算，总分不为负）
+      this.state.score_dengshen = Math.max(0, this.state.score_dengshen + (reward.dengshen || 0));
+      this.state.score_jinshen += (reward.jinshen || 0);
+      // 恢复部分资源
+      this.state.chengshi.hp = Math.min(this.state.chengshi.hpMax, this.state.chengshi.hp + 20);
+      this.state.chengshi.mp = Math.min(this.state.chengshi.mpMax, this.state.chengshi.mp + 30);
+
+      // 自动保存成绩到排行榜（实时排名更新，与玩家排名体系联动）
+      const rank = this.saveToLeaderboard();
+      const jinRank = this._jinshenRank();
+
+      UI.updateAllBars();
+      UI.renderFlags();
+
+      // —— 剧情区结算播报（按文件格式；隐藏结局无"挑战成功"行）——
+      if (trial && outcome !== 'hidden') {
+        const faithInfo = DATA_FAITHS[trial.god] || {};
+        this.addStoryLine('旁白', `【特殊试炼（${trial.name}【${faithInfo.name || trial.path}】）挑战成功】`, 'narration');
       }
-    }, 1500);
+      this.addStoryLine('旁白', '【正在评分，并结算奖励......】', 'narration');
+      maskLines.forEach(l => this.addStoryLine('旁白', l, 'narration'));
+      this.addStoryLine('旁白', `【登神之路${reward.dengshen >= 0 ? '+' : ''}${reward.dengshen}】`, 'narration');
+      this.addStoryLine('旁白', `【觐见之梯${reward.jinshen >= 0 ? '+' : ''}${reward.jinshen}】`, 'narration');
+      if (outcomeScene && outcomeScene.gaze) {
+        this.addStoryLine('旁白', '【祂们似乎，多看了你一眼】', 'narration');
+      }
+
+      const gradeName = outcomeMap[outcome] ? outcomeMap[outcome].name : outcome;
+      const gradeText = outcome === 'hidden' ? 'C（隐藏结局）' : outcome;
+
+      // 显示结果（按文件结算面板格式）
+      setTimeout(() => {
+        try {
+          this.showModal(
+            `试炼结算 · ${gradeName}`,
+            `【玩家：程实，表现评分：${gradeText}】\n\n` +
+            `${summary}\n\n` +
+            (maskLines.length ? `【获得道具】\n${maskLines.join('\n')}\n\n` : '') +
+            `🏆 登神之路 ${reward.dengshen >= 0 ? '+' : ''}${reward.dengshen} 分\n` +
+            `⭐ 觐见之梯 ${reward.jinshen >= 0 ? '+' : ''}${reward.jinshen} 分\n\n` +
+            `【当前登神之路得分】${this.state.score_dengshen}，全球排名：第 ${rank || '—'} 名\n` +
+            `【当前觐见之梯得分】${this.state.score_jinshen}，命途排名：第 ${jinRank} 名` +
+            `\n\n【本轮进度】${this._runTrialsDone} / ${this._runTrialTarget} 场试炼`,
+            [
+              { text: '继续', action: () => { UI.closeModal(); this.afterTrial(); } }
+            ]
+          );
+        } catch(e) {
+          console.error('[Game] finishTrial modal crash:', e);
+        }
+      }, 1500);
     } catch(e) {
       console.error('[Game] finishTrial crash:', e);
       this.toast('试炼结算异常', 'error');
       setTimeout(() => this.prepareNextTrial(), 2000);
     }
+  },
+
+  /* ===== C 结局：淘汰（死亡即淘汰，无面板无加分）===== */
+  eliminatePlayer(outcomeScene) {
+    try {
+      const summary = (outcomeScene && outcomeScene.summary) || '试炼失败。';
+      this.addStoryLine('旁白', '【玩家：程实，已淘汰】', 'narration');
+
+      setTimeout(() => {
+        this.showModal(
+          '💀 已淘汰',
+          `${summary}\n\n` +
+          `【玩家：程实，已淘汰】\n\n` +
+          `死亡即淘汰——本场无评分、无面板、不计分。\n\n` +
+          `【最终积分】\n登神之路：${this.state.score_dengshen}\n觐见之梯：${this.state.score_jinshen}\n` +
+          `累计试炼：${this.trialCount}`,
+          [
+            { text: '开启新轮回', style: 'primary', action: () => { UI.closeModal(); this.startNewCycle(); this.startTrial(); } },
+            { text: '返回标题', action: () => { location.reload(); } }
+          ]
+        );
+      }, 1800);
+    } catch(e) {
+      console.error('[Game] eliminatePlayer crash:', e);
+      this.toast('结算异常', 'error');
+    }
+  },
+
+  /* ===== 觐见之梯命途排名（随觐见积分升降）===== */
+  _jinshenRank() {
+    return Math.max(1, 60 - this.state.score_jinshen * 2);
   },
 
   /* ===== 试炼后触发觐神或继续 ===== */
@@ -1055,7 +1290,7 @@ const Game = {
           `【总积分】${total}（登神 ${this.state.score_dengshen} + 觐见 ${this.state.score_jinshen}）\n` +
           `【天梯最终排名】第 ${rank || '—'} 名 / 50\n` +
           `【成就回顾】已解锁 ${achCount}/${achTotal} 项${achLines ? '\n' + achLines : ''}\n\n` +
-          `欺诈神在远处呵呵直笑："这场乐子，吾记下了。下一轮，继续来骗吾啊。"\n\n` +
+          `【欺诈】在远处呵呵直笑："这场乐子，吾记下了。下一轮，继续来骗吾啊。"\n\n` +
           `※ 成就与天梯记录将保留，开启新的轮回吧。`,
           [
             { text: '开启新轮回', style: 'primary', action: () => { UI.closeModal(); this.startNewCycle(); } },
@@ -1090,7 +1325,8 @@ const Game = {
       Math.floor(Math.random() * (GAME_CONFIG.trials.perRunMax - GAME_CONFIG.trials.perRunMin + 1));
     this._runTrialsDone = 0;
     this.state.completedTrials = [];
-    // 成就与 achievementTimes 保留（跨轮回）
+    this.state.trialFlags = [];
+    // 成就、假面背包与 achievementTimes 保留（跨轮回）
     this.showScreen('main-screen');
     const content = document.getElementById('story-content');
     if (content) content.innerHTML = '';
@@ -1253,6 +1489,35 @@ const Game = {
           UI.updateAllBars();
           this.toast('精神 +25', 'success');
         } },
+      { text: '关闭', action: () => UI.closeModal() }
+    ]);
+  },
+
+  /* ===== 假面背包（试炼奖励收藏，跨轮回保留）===== */
+  showMaskBag() {
+    const bag = this.state.maskBag || [];
+    let html;
+    if (bag.length === 0) {
+      html = '<p style="font-size:12px;color:var(--text-muted);">背包还是空的。在试炼中存活并取得更高评分，就能获得队友留下的假面。</p>';
+    } else {
+      // 按试炼分组倒序展示
+      const groups = {};
+      bag.forEach(m => {
+        const key = m.trial || '未知试炼';
+        (groups[key] = groups[key] || []).push(m);
+      });
+      const rankColor = r => ({ S: '#e6b450', A: '#c084fc', B: '#6fb3e0', C: '#8a8a8a' }[r] || '#8a8a8a');
+      html = `<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">已收藏假面 ${bag.length} 枚：</p>` +
+        Object.keys(groups).reverse().map(t => {
+          const items = groups[t].map(m =>
+            `<div style="background:var(--bg-panel-alt);padding:8px 10px;border-radius:4px;margin:4px 0;border-left:3px solid ${rankColor(m.rank)};">` +
+            `<b>${m.name}</b> <span style="color:${rankColor(m.rank)};font-size:11px;">（${m.rank}）</span>` +
+            `${m.from ? `<span style="font-size:11px;color:var(--text-muted);"> —— ${m.from}</span>` : ''}</div>`
+          ).join('');
+          return `<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--accent-gold,#e6b450);margin-bottom:4px;">◆ ${t}</div>${items}</div>`;
+        }).join('');
+    }
+    this.showModal('🎭 假面背包', html, [
       { text: '关闭', action: () => UI.closeModal() }
     ]);
   },
@@ -1444,7 +1709,7 @@ const Game = {
   DATA_EASTER_EGGS: [
     { id: 'auto_lie_triggered',  name: '愚戏之唇',   hint: '触发一次失控谎言' },
     { id: 'fear_100_secret',     name: '深渊凝视',   hint: '让恐惧值达到极限（触发秘密结局）' },
-    { id: 'faith_combo_fraud_mem', name: '背叛记忆', hint: '信仰欺诈 + 遇到记忆神信徒队友时触发特殊对话' },
+    { id: 'faith_combo_fraud_mem', name: '背叛记忆', hint: '信仰欺诈 + 遇到【记忆】信徒队友时触发特殊对话' },
     { id: 'all_lie_choices',     name: '谎言之王',   hint: '一次试炼中所有选择都是谎言' },
     { id: 'teammate_truth',     name: '队友的真相', hint: '连续三场试炼让同类型队友都活到最后' }
   ],
@@ -1693,9 +1958,9 @@ const Game = {
   ],
   
   FORUM_MESSAGES: [
-    { ch: '🎭 欺诈信徒圈', user: '今天也在骗着呢', msg: '新人注意！欺诈神讨厌毫无技术含量的谎言。你至少要编一个让自己都信的。', time: '3分钟前' },
+    { ch: '🎭 欺诈信徒圈', user: '今天也在骗着呢', msg: '新人注意！【欺诈】讨厌毫无技术含量的谎言。你至少要编一个让自己都信的。', time: '3分钟前' },
     { ch: '📖 记忆信徒圈', user: '一纸旧信笺', msg: '有人用记忆天赋回溯到过上一个循环吗？我试过一次，看到了不该看的东西……', time: '8分钟前' },
-    { ch: '⚔️ 试炼经验', user: '别信我第二句', msg: '秩序神的试炼，别直接否认指控。承认一半，编另一半，通过率翻三倍。', time: '12分钟前' },
+    { ch: '⚔️ 试炼经验', user: '别信我第二句', msg: '【秩序】的试炼，别直接否认指控。承认一半，编另一半，通过率翻三倍。', time: '12分钟前' },
     { ch: '💀 死亡闲聊', user: '旧事枕边书', msg: '墓碑试炼真的不选自己选的队友吗？选自己死了就没了啊……', time: '18分钟前' },
     { ch: '🌪️ 混乱脑洞', user: '越离谱越真', msg: '有没有可能所有神都是同一个东西的不同侧面？细思极恐', time: '25分钟前' },
     { ch: '🍂 腐朽吐槽', user: '半盏茶凉', msg: '腐朽镇那关真的太压抑了，我玩到一半差点卸载游戏……', time: '33分钟前' },
@@ -1704,14 +1969,14 @@ const Game = {
     { ch: '🎭 欺诈信徒圈', user: '嘴比脑子快', msg: '愚戏之唇那个失控效果谁触发过？我听说是随机场景触发的，不是所有人都有', time: '1小时前' },
     { ch: '📖 记忆信徒圈', user: '墨痕未干', msg: '用记忆天赋"翻阅"队友的记忆会怎样？试过的人说看到了很黑暗的东西……', time: '1小时前' },
     { ch: '🗡️ 战斗技巧', user: '一本正经胡说', msg: '骨仆戒指充能满了一个雷刑能秒恐魔，记住！', time: '1小时前' },
-    { ch: '💀 死亡闲聊', user: '灯下拾遗', msg: '死亡神给我保管了一段我自己不记得的记忆……不知道该不该问', time: '2小时前' },
+    { ch: '💀 死亡闲聊', user: '灯下拾遗', msg: '【死亡】给我保管了一段我自己不记得的记忆……不知道该不该问', time: '2小时前' },
     { ch: '🌪️ 混乱脑洞', user: '戏精本精', msg: '混乱试炼可以同时扮演多个身份！我试过欺诈+污堕+秩序，爽到爆炸', time: '2小时前' },
     { ch: '⚔️ 试炼经验', user: '鬼话连篇君', msg: '每次试炼之间间隔七天，这七天真的只能等吗？有没有办法跳过？', time: '3小时前' },
     { ch: '🍂 腐朽吐槽', user: '薄雾渡口', msg: '腐朽和繁荣的关系我现在才想明白——没有腐朽就没有繁荣，没有繁荣也就没有腐朽', time: '3小时前' },
     { ch: '😱 恐魔日常', user: '瞎话篓子', msg: '恐魔的恐惧值溢出的时候会发生什么？有人试过吗？', time: '4小时前' },
     { ch: '🎭 欺诈信徒圈', user: '越离谱越真', msg: '刚通关一个用谎如昨日切换到记忆信仰的试炼，欺诈+记忆真的太bug了', time: '5小时前' },
     { ch: '⚔️ 试炼经验', user: '守阁老人', msg: '给大家一个忠告：不要在觐神的时候对神说谎。真的会扣欣赏值', time: '6小时前' },
-    { ch: '📖 记忆信徒圈', user: '残卷校书郎', msg: '有人知道"被保管的记忆"到底是怎么回事吗？死亡神到底替我们藏了什么？', time: '8小时前' },
+    { ch: '📖 记忆信徒圈', user: '残卷校书郎', msg: '有人知道"被保管的记忆"到底是怎么回事吗？【死亡】到底替我们藏了什么？', time: '8小时前' },
     { ch: '🌪️ 混乱脑洞', user: '旧事枕边书', msg: '突然想到：如果所有试炼的神都是同一个存在的不同人格？', time: '10小时前' }
   ],
   
