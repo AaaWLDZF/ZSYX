@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1a0a1f">
   <meta name="format-detection" content="telephone=no">
   <title>诸神愚戏 · 信仰试炼</title>
-  <link rel="stylesheet" href="css/style.css?v=0.3">
+  <link rel="stylesheet" href="css/style.css?v=0.4">
 </head>
 <body>
   <!-- 开始界面 -->
@@ -124,6 +124,9 @@
         </div>
       </section>
 
+      <!-- 旗标栏 -->
+      <div class="flags-bar" id="flags-bar"><span class="flags-empty">旗标：无</span></div>
+
       <!-- 选择面板 -->
       <section class="panel panel-choices" id="choices-panel">
         <div class="choices-list" id="choices-list">
@@ -147,6 +150,7 @@
       <button class="footer-btn" onclick="Game.useTalent()" id="talent-btn">✨ 天赋</button>
       <button class="footer-btn" onclick="Game.openLiePanel()" id="open-lie-btn">🎭 谎言</button>
       <button class="footer-btn" onclick="Game.inventory()" id="inv-btn">🎒 道具</button>
+      <button class="footer-btn" onclick="Game.showMaskBag()" id="mask-btn">🎭 假面</button>
       <button class="footer-btn" onclick="Game.showAchievements()">🏆 成就</button>
       <button class="footer-btn" onclick="Game.showHelp()">📖 说明</button>
     </footer>
@@ -172,8 +176,8 @@
     <span class="dot"></span><span class="dot"></span><span class="dot"></span>
   </div>
 
-  <script src="js/data.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="js/data.js?v=0.4"></script>
+  <script src="js/game.js?v=0.4"></script>
+  <script src="js/ui.js?v=0.4"></script>
 </body>
 </html>
