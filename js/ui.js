@@ -115,6 +115,20 @@ const UI = {
     }).join('');
   },
 
+  /* ===== 旗标栏 ===== */
+  TALENT_HIDDEN_FLAGS: ['献往虚无的祭品'],
+  renderFlags() {
+    const bar = document.getElementById('flags-bar');
+    if (!bar) return;
+    const flags = ((Game.state && Game.state.trialFlags) || []).filter(f => !this.TALENT_HIDDEN_FLAGS.includes(f));
+    if (flags.length === 0) {
+      bar.innerHTML = '<span class="flags-empty">旗标：无</span>';
+      return;
+    }
+    bar.innerHTML = '<span class="flags-label">旗标</span>' +
+      flags.map(f => `<span class="flag-tag">${f}</span>`).join('');
+  },
+
   /* ===== 场景标题 ===== */
   setSceneTitle(title) {
     const el = document.getElementById('scene-title');
